@@ -17,6 +17,10 @@ let labelTool = {
     skipFrameCount: 1,
     currentFileIndex: 0,
     filterGround: false,
+    showProjectedPoints: false,
+    imageHeight: 720,
+    imageWidth: 1280,
+    camChannelsEnables: [0, 1, 0, 0, 0, 0],
     
     ///////////////////////////////////////////////////////
     datasets: Object.freeze({"NuScenes": "NuScenes"}),
@@ -349,7 +353,7 @@ let labelTool = {
       // if (labelTool.cameraImagesLoaded === false) {
         // for (let i = 0; i < this.numFrames; i++) {
             for (let camChannelObj in this.camChannels) {
-                if (this.camChannels.hasOwnProperty(camChannelObj)) {
+                if (this.camChannels.hasOwnProperty(camChannelObj) && labelTool.camChannelsEnables[camChannelObj]) {
                     let camChannelObject = this.camChannels[camChannelObj];
                     loadCameraImages(camChannelObject.channel, labelTool.currentFileIndex);
                 }
@@ -362,16 +366,18 @@ let labelTool = {
       for (let i = 0; i < 6; i++) {
           // imageArrayAll[labelTool.currentFileIndex][i].toBack();
           // console.log("show camera images of current frame: ", i);
-          imageArray[i].toBack();
+          if(labelTool.camChannelsEnables[i]){
+            imageArray[i].toBack();
+          }
       }
 
       // draw 2D bb for all objects
       // note that last element is the 'insertIndex' -> iterate until length-1
       if (annotationObjects.contents !== undefined && annotationObjects.contents.length > 0) {
-          for (let j = 0; j < annotationObjects.contents[this.currentFileIndex].length - 1; j++) {
+          for (let j = 0; j < annotationObjects.contents[this.currentFileIndex].length; j++) {
               let annotationObj = annotationObjects.contents[this.currentFileIndex][j];
               let params = setObjectParameters(annotationObj);
-              console.log("begin to draw");
+              // console.log("begin to draw");
               draw2DProjections(params);
               // set new params
               for (let i = 0; i < annotationObj["channels"].length; i++) {
@@ -379,6 +385,7 @@ let labelTool = {
               }
           }
       }
+
       loadPCDData();
     },
 
@@ -533,6 +540,7 @@ let labelTool = {
                 classesBoundingBox[keys[i]].nextTrackId = maxTrackIds[i] + 1;
             }
         }
+
         // project 3D positions of current frame into 2D camera images
         if (annotationObjects.contents[this.currentFileIndex].length > 0) {
             // console.log("length: ", annotationObjects.contents[this.currentFileIndex].length);
@@ -604,6 +612,7 @@ let labelTool = {
                       imageWidth = labelTool.imageSizes["NuScenes"]["minWidthNormal"];
                   }
               }
+              // console.log("init_panel, image_width, ", imageWidth, "imagePanelTopPos", imagePanelTopPos);
               paperArray.push(Raphael(canvasArray[channelIdx], imageWidth, imagePanelTopPos));
           }
           labelTool.imageCanvasInitialized = true;
@@ -775,9 +784,10 @@ let labelTool = {
 
         this.initialize();
         
-        setPanelSize(labelTool.currentFileIndex);
         this.showData();
         this.getAnnotations();
+
+        setPanelSize(labelTool.currentFileIndex);
     },
 
     getFileNamesAdvan() {
@@ -1430,11 +1440,11 @@ function getIndexByDimension(width, length, height) {
 }
 
 function draw2DProjections(params) {
-    console.log(params);
+    // console.log(params);
     for (let i = 0; i < params.channels.length; i++) {
-        if (params.channels[i].channel !== undefined && params.channels[i].channel !== "") {
-            params.channels[i].projectedPoints = calculateProjectedBoundingBox(params.x, params.y, params.z, params.width, params.length, params.height, params.channels[i].channel, params.rotationY);
-            console.log(params.channels[i].projectedPoints);
+        if (params.channels[i].channel !== undefined && params.channels[i].channel !== "" && labelTool.camChannelsEnables[i]) {
+            params.channels[i].projectedPoints = calculateProjectedBoundingBoxAdvan(params.x, params.y, params.z, params.width, params.length, params.height, params.channels[i].channel, params.rotationY);
+            // console.log(params.channels[i].projectedPoints);
             // calculate line segments
             let channelObj = params.channels[i];
             if (params.channels[i].projectedPoints !== undefined && params.channels[i].projectedPoints.length === 8) {
@@ -1703,7 +1713,6 @@ function calculateAndDrawLineSegments(channelObj, className, horizontal, selecte
 
     // color objects that are selected in red
 
-
     let imageHeight = parseInt($("#layout_layout_resizer_top").css("top"), 10);
     let imageWidth;
     if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
@@ -1872,19 +1881,34 @@ function setPanelSize(newFileIndex) {
 
 
     for (let i = 0; i < labelTool.camChannels.length; i++) {
-        let id = "#image-" + labelTool.camChannels[i].channel.toLowerCase().replace(/_/g, '-');
-        // bring all svgs into background
-        let allSvg = $(id + " svg");
-        // console.log(allSvg);
-        // allSvg[0].style.zIndex = 0;
-        for (let j = 0; j < allSvg.length; j++) {
-            allSvg[j].style.zIndex = 0;
+        if(labelTool.camChannelsEnables[i]){
+          let id = "#image-" + labelTool.camChannels[i].channel.toLowerCase().replace(/_/g, '-');
+          // bring all svgs into background
+          let allSvg = $(id + " svg");
+          // console.log(allSvg);
+          // allSvg[0].style.zIndex = 0;
+
+          allSvg[labelTool.numFrames - newFileIndex - 1].style.zIndex = 2;
+
+          for (let j = 0; j < allSvg.length; j++) {
+            if(j !== labelTool.numFrames - newFileIndex - 1){
+              allSvg[j].style.zIndex = 0;
+            }
+          }
+
+          allSvg[labelTool.numFrames - newFileIndex - 1].style.zIndex = 1;
+          let imgWidth = window.innerWidth / 6;
+          // console.log("image_width_svg: " + imgWidth)
+          allSvg[labelTool.numFrames - newFileIndex - 1].style.width = imgWidth;
+          allSvg[labelTool.numFrames - newFileIndex - 1].style.height = imgWidth / labelTool.imageAspectRatioNuScenes;
+
+          // allSvg[labelTool.numFrames - newFileIndex - 1].style.zIndex = 2;
+          // let imgWidth = window.innerWidth / 6;
+          // // console.log("image_width_svg: " + imgWidth)
+          // allSvg[labelTool.numFrames - newFileIndex - 1].style.width = imgWidth;
+          // allSvg[labelTool.numFrames - newFileIndex - 1].style.height = imgWidth / labelTool.imageAspectRatioNuScenes;
         }
-        allSvg[labelTool.numFrames - newFileIndex - 1].style.zIndex = 2;
-        let imgWidth = window.innerWidth / 6;
-        // console.log("image_width_svg: " + imgWidth)
-        allSvg[labelTool.numFrames - newFileIndex - 1].style.width = imgWidth;
-        allSvg[labelTool.numFrames - newFileIndex - 1].style.height = imgWidth / labelTool.imageAspectRatioNuScenes;
+        
     }
 
 }

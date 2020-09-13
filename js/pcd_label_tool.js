@@ -763,36 +763,38 @@ function update2DBoundingBox(fileIndex, objectIndex, isSelected) {
   console.log("fileIndex: ", fileIndex);
   console.log("objectIndex: ", objectIndex);
   console.log(annotationObjects.contents[fileIndex]);
-    let className = annotationObjects.contents[fileIndex][objectIndex].class;
-    for (let channelObject in annotationObjects.contents[fileIndex][objectIndex].channels) {
-        if (annotationObjects.contents[fileIndex][objectIndex].channels.hasOwnProperty(channelObject)) {
-            let channelObj = annotationObjects.contents[fileIndex][objectIndex].channels[channelObject];
-            if (channelObj.channel !== '') {
-                let x = annotationObjects.contents[fileIndex][objectIndex]["x"];
-                let y = annotationObjects.contents[fileIndex][objectIndex]["y"];
-                let z = annotationObjects.contents[fileIndex][objectIndex]["z"];
-                let width = annotationObjects.contents[fileIndex][objectIndex]["width"];
-                let length = annotationObjects.contents[fileIndex][objectIndex]["length"];
-                let height = annotationObjects.contents[fileIndex][objectIndex]["height"];
-                let rotationY = annotationObjects.contents[fileIndex][objectIndex]["rotationY"];
-                let channel = channelObj.channel;
-                channelObj.projectedPoints = calculateProjectedBoundingBox(x, y, z, width, length, height, channel, rotationY);
-                // remove previous drawn lines of all 6 channels
-                for (let lineObj in channelObj.lines) {
-                    if (channelObj.lines.hasOwnProperty(lineObj)) {
-                        let line = channelObj.lines[lineObj];
-                        if (line !== undefined) {
-                            line.remove();
-                        }
-                    }
-                }
-                if (channelObj.projectedPoints !== undefined && channelObj.projectedPoints.length === 8) {
-                    let horizontal = width > height;
-                    channelObj.lines = calculateAndDrawLineSegments(channelObj, className, horizontal, isSelected);
-                }
-            }
-        }
-    }
+
+  let className = annotationObjects.contents[fileIndex][objectIndex].class;
+  for (let channelObject in annotationObjects.contents[fileIndex][objectIndex].channels) {
+      if (annotationObjects.contents[fileIndex][objectIndex].channels.hasOwnProperty(channelObject)) {
+          let channelObj = annotationObjects.contents[fileIndex][objectIndex].channels[channelObject];
+          if (channelObj.channel !== '') {
+              let x = annotationObjects.contents[fileIndex][objectIndex]["x"];
+              let y = annotationObjects.contents[fileIndex][objectIndex]["y"];
+              let z = annotationObjects.contents[fileIndex][objectIndex]["z"];
+              let width = annotationObjects.contents[fileIndex][objectIndex]["width"];
+              let length = annotationObjects.contents[fileIndex][objectIndex]["length"];
+              let height = annotationObjects.contents[fileIndex][objectIndex]["height"];
+              let rotationY = annotationObjects.contents[fileIndex][objectIndex]["rotationY"];
+              let channel = channelObj.channel;
+              channelObj.projectedPoints = calculateProjectedBoundingBoxAdvan(x, y, z, width, length, height, channel, rotationY);
+              // remove previous drawn lines of all 6 channels
+              for (let lineObj in channelObj.lines) {
+                  if (channelObj.lines.hasOwnProperty(lineObj)) {
+                      let line = channelObj.lines[lineObj];
+                      if (line !== undefined) {
+                          line.remove();
+                      }
+                  }
+              }
+              if (channelObj.projectedPoints !== undefined && channelObj.projectedPoints.length === 8) {
+                  let horizontal = width > height;
+                  channelObj.lines = calculateAndDrawLineSegments(channelObj, className, horizontal, isSelected);
+              }
+          }
+      }
+  }
+
 }
 
 // function updateChannels(insertIndex) {
@@ -2189,36 +2191,43 @@ function calculateProjectedBoundingBoxAdvan(xPos, yPos, zPos, width, length, hei
   // TODO: calculate scaling factor dynamically (based on top position of slider)
   let imageScalingFactor;
   let imagePanelHeight = parseInt($("#layout_layout_resizer_top").css("top"), 10);
-  // console.log("image panel height: "+imagePanelHeight)
+  // console.log("image panel height: "+ imagePanelHeight)
   if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
-      imageScalingFactor = 900 / imagePanelHeight;//5
-      xPos = xPos + labelTool.translationVectorLidarToCamFront[1];//lat
-      yPos = yPos + labelTool.translationVectorLidarToCamFront[0];//long
-      zPos = zPos + labelTool.translationVectorLidarToCamFront[2];//vertical
+      imageScalingFactor = labelTool.imageHeight / imagePanelHeight;//5
+      // xPos = xPos + labelTool.translationVectorLidarToCamFront[1];//lat
+      // yPos = yPos + labelTool.translationVectorLidarToCamFront[0];//long
+      // zPos = zPos + labelTool.translationVectorLidarToCamFront[2];//vertical
   }
   let cornerPoints = [];
 
+  let rotationY_matrix = [[Math.cos(rotationY), -Math.sin(rotationY), 0, xPos],
+                          [Math.sin(rotationY),  Math.cos(rotationY), 0, yPos],
+                          [0, 0, 1, zPos],
+                          [0, 0, 0, 1]];
+
   if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
-      cornerPoints.push(new THREE.Vector3(xPos - width / 2, yPos - length / 2, zPos + height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos + width / 2, yPos - length / 2, zPos + height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos + width / 2, yPos + length / 2, zPos + height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos - width / 2, yPos + length / 2, zPos + height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos - width / 2, yPos - length / 2, zPos - height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos + width / 2, yPos - length / 2, zPos - height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos + width / 2, yPos + length / 2, zPos - height / 2));
-      cornerPoints.push(new THREE.Vector3(xPos - width / 2, yPos + length / 2, zPos - height / 2));
+      cornerPoints.push(new THREE.Vector3( length/ 2, width / 2, height / 2 ));
+      cornerPoints.push(new THREE.Vector3( length/ 2, width / 2, -height / 2 ));
+      cornerPoints.push(new THREE.Vector3( -length/ 2, width / 2, -height / 2 ));
+      cornerPoints.push(new THREE.Vector3( -length/ 2, width / 2, height / 2 ));
+      cornerPoints.push(new THREE.Vector3( length/ 2, -width / 2, height / 2 ));
+      cornerPoints.push(new THREE.Vector3( length/ 2, -width / 2, -height / 2 ));
+      cornerPoints.push(new THREE.Vector3( -length/ 2, -width / 2, -height / 2 ));
+      cornerPoints.push(new THREE.Vector3( -length/ 2, -width / 2, height / 2 ));
   }
 
+  // imageScalingFactor = 1;
 
   let projectedPoints = [];
   for (let cornerPoint in cornerPoints) {
       let point = cornerPoints[cornerPoint];
       let point3D = [point.x, point.y, point.z, 1];
+      let point3D_transformed = matrixProduct4x4(rotationY_matrix, point3D);
       let projectionMatrix;
       let point2D;
       if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
           projectionMatrix = labelTool.camChannels[idx].projectionMatrixNuScenes;
-          point2D = matrixProduct3x4(projectionMatrix, point3D);
+          point2D = matrixProduct3x4(projectionMatrix, point3D_transformed);
       }
 
       if (point2D[2] > 0) {
@@ -2242,7 +2251,7 @@ function calculateProjectedBoundingBox(xPos, yPos, zPos, width, length, height, 
     let imagePanelHeight = parseInt($("#layout_layout_resizer_top").css("top"), 10);
     // console.log("image panel height: "+imagePanelHeight)
     if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
-        imageScalingFactor = 900 / imagePanelHeight;//5
+        imageScalingFactor = labelTool.imageHeight / imagePanelHeight;//5
         xPos = xPos + labelTool.translationVectorLidarToCamFront[1];//lat
         yPos = yPos + labelTool.translationVectorLidarToCamFront[0];//long
         zPos = zPos + labelTool.translationVectorLidarToCamFront[2];//vertical
@@ -2374,9 +2383,10 @@ function readPointCloud() {
     let rawFile = new XMLHttpRequest();
     try {
         if (labelTool.showOriginalNuScenesLabels === true) {
-            rawFile.open("GET", 'input/' + labelTool.currentDataset + '/pointclouds/' + pad(labelTool.currentFileIndex, 6) + '.pcd', false);
+            rawFile.open("GET", 'input/' + labelTool.currentDataset + '/pointclouds/' + labelTool.fileNames[labelTool.currentFileIndex] + '.pcd', false);
         } else {
-            rawFile.open("GET", 'input/' + labelTool.currentDataset + '/' + labelTool.currentSequence + '/pointclouds/' + pad(labelTool.currentFileIndex, 6) + '.pcd', false);
+            // rawFile.open("GET", 'input/' + labelTool.currentDataset + '/' + labelTool.currentSequence + '/pointclouds/' + pad(labelTool.currentFileIndex, 6) + '.pcd', false);
+            rawFile.open("GET", 'input/' + labelTool.currentDataset + '/' + labelTool.currentSequence + '/pointclouds/' + labelTool.fileNames[labelTool.currentFileIndex] + '.pcd', false);
         }
     } catch (error) {
         // no labels available for this camera image
@@ -2425,7 +2435,7 @@ function projectPoints(points3D, channelIdx) {
     let scalingFactor;
     let imagePanelHeight = parseInt($("#layout_layout_resizer_top").css("top"), 10);
     if (labelTool.currentDataset === labelTool.datasets.NuScenes) {
-        scalingFactor = 900 / imagePanelHeight;
+        scalingFactor = labelTool.imageHeight / imagePanelHeight;
         projectionMatrix = labelTool.camChannels[channelIdx].projectionMatrixNuScenes;
     }
 
@@ -2470,18 +2480,22 @@ function normalizeDistances() {
 function showProjectedPoints() {
     let points3D = readPointCloud();
     for (let channelIdx = 0; channelIdx < labelTool.camChannels.length; channelIdx++) {
-        // let paper = paperArray[channelIdx];
-        let paper = paperArrayAll[labelTool.currentFileIndex][channelIdx];
-        let points2D = projectPoints(points3D, channelIdx);
-        normalizeDistances();
-        for (let i = 0; i < points2D.length; i++) {
-            let pt2D = points2D[i];
-            let circle = paper.circle(pt2D.x, pt2D.y, 1);
-            let distance = currentDistances[i];
-            let color = colorMap[Math.floor(distance)];
-            circle.attr("stroke", color);
-            circle.attr("stroke-width", 1);
-            circleArray.push(circle);
+        if(labelTool.camChannelsEnables[channelIdx]){
+          // console.log("showProjectedPoints");
+          // let paper = paperArray[channelIdx];
+          let paper = paperArrayAll[labelTool.currentFileIndex][channelIdx];
+          let points2D = projectPoints(points3D, channelIdx);
+          normalizeDistances();
+          for (let i = 0; i < points2D.length; i++) {
+              let pt2D = points2D[i];
+              let circle = paper.circle(pt2D.x, pt2D.y, 0.5);
+              let distance = currentDistances[i];
+              let color = colorMap[Math.floor(distance)];
+              circle.attr("stroke", color);
+              circle.attr("fill", color);
+              circle.attr("stroke-width", 0);
+              circleArray.push(circle);
+          }
         }
     }
 
@@ -3036,7 +3050,7 @@ function mouseUpLogic(ev) {
                 // set channel
                 for (let i = 0; i < labelTool.camChannels.length; i++) {
                     let channel = labelTool.camChannels[i].channel;
-                    let projectedBoundingBox = calculateProjectedBoundingBox(xPos, yPos, addBboxParameters.z, addBboxParameters.width, addBboxParameters.length, addBboxParameters.height, channel, addBboxParameters.rotationY);
+                    let projectedBoundingBox = calculateProjectedBoundingBoxAdvan(xPos, yPos, addBboxParameters.z, addBboxParameters.width, addBboxParameters.length, addBboxParameters.height, channel, addBboxParameters.rotationY);
                     addBboxParameters.channels[i].projectedPoints = projectedBoundingBox;
                 }
                 // calculate line segments
@@ -3728,8 +3742,8 @@ function init() {
         });
         let showProjectedPointsCheckbox = guiOptions.add(parameters, 'show_projected_points').name('Show projected points').listen();
         showProjectedPointsCheckbox.onChange(function (value) {
-            showProjectedPointsFlag = value;
-            if (showProjectedPointsFlag === true) {
+            labelTool.showProjectedPoints = value;
+            if (labelTool.showProjectedPoints === true) {
                 showProjectedPoints();
             } else {
                 hideProjectedPoints();
@@ -3751,7 +3765,7 @@ function init() {
         let filterGroundCheckbox = guiOptions.add(parameters, 'filter_ground').name('Filter ground').listen();
         filterGroundCheckbox.onChange(function (value) {
             labelTool.filterGround = value;
-            console.info(labelTool.filterGround, labelTool.currentFileIndex);
+            // console.info(labelTool.filterGround, labelTool.currentFileIndex);
             if (labelTool.filterGround === true) {
                 labelTool.removeObject("pointcloud-scan-" + labelTool.currentFileIndex);
                 // addObject(pointCloudScanNoGroundList[labelTool.currentFileIndex], "pointcloud-scan-no-ground-" + labelTool.currentFileIndex);
@@ -3895,7 +3909,7 @@ function init() {
         let downloadAnnotationsDivItem = downloadAnnotationsItem.children().first();
         downloadAnnotationsDivItem.wrap("<a href=\"\"></a>");
         loadColorMap();
-        if (showProjectedPointsFlag === true) {
+        if (labelTool.showProjectedPoints === true) {
             showProjectedPoints();
         } else {
             hideProjectedPoints();
