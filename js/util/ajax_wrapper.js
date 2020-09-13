@@ -21,6 +21,12 @@ function request(options) {
                 res = parseAnnotationFilename(fileName);
                 options.success(res);
                 break;
+            case "/annotations/config":
+                fileName = options.data["file_name"];
+                res = [];
+                res = parseAnnotationConfig(fileName);
+                options.success(res);
+                break;
         }
     }
 }
@@ -116,6 +122,7 @@ function parseAnnotationFile(fileName) {
                     return frameAnnotations;
                 } else {
                     let annotationsJSONString = rawFile.responseText;
+                    // console.log("annotationsJSONString: ", annotationsJSONString);
                     annotationsJSONArray = eval(annotationsJSONString);
                     return annotationsJSONArray;
                 }
@@ -152,7 +159,7 @@ function parseAnnotationFilename(fileName) {
         if (rawFile.status === 200 || rawFile.status === 0) {
             let annotationsFilenameString = rawFile.responseText;
             annotationsFilenameArray = annotationsFilenameString.split('\r\n');
-            console.log(annotationsFilenameArray);
+            // console.log(annotationsFilenameArray);
             return annotationsFilenameArray;
         } else {
             return null;
@@ -161,5 +168,34 @@ function parseAnnotationFilename(fileName) {
   };
   rawFile.send(null);
   return annotationsFilenameArray;
+}
 
+function parseAnnotationConfig(fileName) {
+  let rawFile = new XMLHttpRequest();
+  let annotationsConfigJson = [];
+
+  let annotationConfigFullURL = 'input/' + labelTool.currentDataset +'/'+labelTool.currentSequence + '/' + fileName;
+  console.log(annotationConfigFullURL);
+
+  try {
+    rawFile.open("GET", annotationConfigFullURL, false);
+  } catch (error) {
+  }
+
+  rawFile.onreadystatechange = function () {
+    // console.log("rawFile.readyState: ", rawFile.readyState, ", rawFile.status: ", rawFile.status);
+    // console.log("rawFile.responseText: ", rawFile.responseText);
+    if (rawFile.readyState === 4) {
+        if (rawFile.status === 200 || rawFile.status === 0) {
+            let annotationsConfigString = rawFile.responseText;
+            
+            annotationsConfigJson = eval(annotationsConfigString);
+            return annotationsConfigJson;
+        } else {
+            return null;
+        }
+    }
+  };
+  rawFile.send(null);
+  return annotationsConfigJson;
 }

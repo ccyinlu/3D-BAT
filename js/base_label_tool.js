@@ -1,26 +1,20 @@
 let labelTool = {
     // change the config below
-    sequencesNuScenes: ['SanheyiDemo'], // One, SanheyiDemo
     currentSequence: 'SanheyiDemo', 
-    targetClass: "Pedestrian",
+
+    sequencesNuScenes: [],
+    targetClass: "",
     // position of the lidar sensor in ego vehicle space
-    // for sanheyi
-    positionLidarNuscenes: [0, 0, 0],//(long, lat, vert)
-    // for ONE
-    // positionLidarNuscenes: [0.891067, 0.0, 1.84292],//(long, lat, vert)
-
-    // for sanheyi
-    translationVectorLidarToCamFront: [-2, 0, -0.5],
-    // for ONE
-    // translationVectorLidarToCamFront: [0.77, -0.02, -0.3],
-
+    positionLidarNuscenes: [],//(long, lat, vert) [0,0,0] [0.891067, 0.0, 1.84292]
+    translationVectorLidarToCamFront: [], // [-2, 0, -0.5] [0.77, -0.02, -0.3]
     skipFrameCount: 1,
     currentFileIndex: 0,
     filterGround: false,
     showProjectedPoints: false,
     imageHeight: 720,
     imageWidth: 1280,
-    camChannelsEnables: [0, 1, 0, 0, 0, 0],
+    camChannelsEnables: [0, 0, 0, 0, 0, 0],
+    imageAspectRatioNuScenes: 1.777777778,
     
     ///////////////////////////////////////////////////////
     datasets: Object.freeze({"NuScenes": "NuScenes"}),
@@ -69,9 +63,9 @@ let labelTool = {
         positionCameraNuScenes: [0, 0.5, 1.2],
         fieldOfView: 70,
         rotationY: 0, // 0 degree
-        projectionMatrixNuScenes: [[797.8205, 696.0762, -81.9386, 360.9578],
-            [-28.5856, 292.0714, -849.7502, 1096.9],
-            [-0.0336,0.9950, -0.0939, 0.5528]],
+        projectionMatrixNuScenes: [[1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0]],
         transformationMatrixEgoToCamNuScenes: [[-0.0047123, -0.9999733, 0.00558502, 1.671],
             [0.01358668, -0.0056486, -0.99989174, -0.026],
             [0.99989659, -0.00463591, 0.01361294, 1.536],
@@ -153,7 +147,6 @@ let labelTool = {
     }],
     currentChannelLabel: document.getElementById('cam_channel'),
     showOriginalNuScenesLabels: false,
-    imageAspectRatioNuScenes: 1.777777778,
     showFieldOfView: false,
     selectedMesh: undefined,
     folderEndPosition: undefined,
@@ -776,6 +769,59 @@ let labelTool = {
     start() {
         initTimer();
         setImageSize();
+
+        // get the config files
+        let configParams = this.getConfigAdvan();
+        // console.log("configParams: ", configParams[0]);
+        // copy the config to the init params
+        // change the config below
+        labelTool.sequencesNuScenes = [configParams[0]["sequencesNuScenes"]];
+        console.log("sequencesNuScenes: ", labelTool.sequencesNuScenes);
+        labelTool.currentSequence = configParams[0]["currentSequence"];
+        console.log("currentSequence: ", labelTool.currentSequence);
+        labelTool.targetClass = configParams[0]["targetClass"];
+        console.log("targetClass: ", labelTool.targetClass);
+
+        let positionLidarNuscenes_ = configParams[0]["positionLidarNuscenes"].split(",");
+        labelTool.positionLidarNuscenes = [];
+        for (let i = 0; i < positionLidarNuscenes_.length; i++) {
+          labelTool.positionLidarNuscenes.push(parseFloat(positionLidarNuscenes_[i]));
+        }
+        console.log("positionLidarNuscenes: ", labelTool.positionLidarNuscenes);
+        let translationVectorLidarToCamFront_ = configParams[0]["translationVectorLidarToCamFront"].split(",");
+        labelTool.translationVectorLidarToCamFront = [];
+        for (let i = 0; i < translationVectorLidarToCamFront_.length; i++) {
+          labelTool.translationVectorLidarToCamFront.push(parseFloat(translationVectorLidarToCamFront_[i]));
+        }
+        console.log("translationVectorLidarToCamFront: ", labelTool.translationVectorLidarToCamFront);
+        labelTool.skipFrameCount = configParams[0]["skipFrameCount"];
+        console.log("skipFrameCount: ", labelTool.skipFrameCount);
+        labelTool.currentFileIndex = configParams[0]["currentFileIndex"];
+        console.log("currentFileIndex: ", labelTool.currentFileIndex);
+        labelTool.filterGround = configParams[0]["filterGround"];
+        console.log("filterGround: ", labelTool.filterGround);
+        labelTool.showProjectedPoints = configParams[0]["showProjectedPoints"];
+        console.log("showProjectedPoints: ", labelTool.showProjectedPoints);
+        labelTool.imageHeight = configParams[0]["imageHeight"];
+        console.log("imageHeight: ", labelTool.imageHeight);
+        labelTool.imageWidth = configParams[0]["imageWidth"];
+        console.log("imageWidth: ", labelTool.imageWidth);
+        let camChannelsEnables_ = configParams[0]["camChannelsEnables"].split(",");
+        labelTool.camChannelsEnables = [];
+        for (let i = 0; i < camChannelsEnables_.length; i++) {
+          labelTool.camChannelsEnables.push(parseInt(camChannelsEnables_[i]));
+        }
+        console.log("camChannelsEnables: ", labelTool.camChannelsEnables);
+        labelTool.imageAspectRatioNuScenes = labelTool.imageWidth / labelTool.imageHeight;
+
+        let cam_front_p_ = configParams[0]["CAM_FRONT_P"].split(',');
+        let p = [];
+        for (let i = 0; i < cam_front_p_.length; i++) {
+          p.push(parseFloat(cam_front_p_[i]));
+        }
+        labelTool.camChannels[1].projectionMatrixNuScenes = [[p[0],p[1],p[2],p[3]],[p[4],p[5],p[6],p[7]],[p[8],p[9],p[10],p[11]]];
+        console.log("camChannels[1].projectionMatrixNuScenes: ", labelTool.camChannels[1].projectionMatrixNuScenes);
+
         // labelTool.fileNames = this.getFileNames();
         labelTool.fileNames = this.getFileNamesAdvan();
         labelTool.numFramesNuScenes = labelTool.fileNames.length;
@@ -789,6 +835,27 @@ let labelTool = {
 
         setPanelSize(labelTool.currentFileIndex);
     },
+
+    getConfigAdvan() {
+      let configParams = [];
+
+      fileName = "config.json";
+      request({
+          url: '/annotations/config',
+          type: 'GET',
+          dataType: 'json',
+          data: {
+              file_name: fileName
+          },
+          success: function (res) {
+            configParams = res;
+          }.bind(this),
+          error: function (res) {
+          }.bind(this)
+      });
+      
+      return configParams;
+  },
 
     getFileNamesAdvan() {
         let fileNameArray = [];
