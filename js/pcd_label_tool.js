@@ -760,8 +760,8 @@ function get3DLabel(parameters) {
 }
 
 function update2DBoundingBox(fileIndex, objectIndex, isSelected) {
-  console.log("fileIndex: ", fileIndex);
-  console.log("objectIndex: ", objectIndex);
+  // console.log("fileIndex: ", fileIndex);
+  // console.log("objectIndex: ", objectIndex);
   console.log(annotationObjects.contents[fileIndex]);
 
   let className = annotationObjects.contents[fileIndex][objectIndex].class;

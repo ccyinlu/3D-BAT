@@ -1,6 +1,6 @@
 let labelTool = {
     // change the config below
-    currentSequence: 'SanheyiDemo', 
+    currentSequence: 'roadSide_01', 
 
     sequencesNuScenes: [],
     targetClass: "",
@@ -770,15 +770,13 @@ let labelTool = {
         initTimer();
         setImageSize();
 
+        labelTool.sequencesNuScenes = [labelTool.currentSequence];
+
         // get the config files
         let configParams = this.getConfigAdvan();
         // console.log("configParams: ", configParams[0]);
         // copy the config to the init params
         // change the config below
-        labelTool.sequencesNuScenes = [configParams[0]["sequencesNuScenes"]];
-        console.log("sequencesNuScenes: ", labelTool.sequencesNuScenes);
-        labelTool.currentSequence = configParams[0]["currentSequence"];
-        console.log("currentSequence: ", labelTool.currentSequence);
         labelTool.targetClass = configParams[0]["targetClass"];
         console.log("targetClass: ", labelTool.targetClass);
 

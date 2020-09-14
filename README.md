@@ -1,6 +1,8 @@
 # 3D BAT
 ![3D BAT](assets/img/3d-bat.png)
 
+## [路测数据标注任务](task_readme_cn.md)
+
 # 3D Bounding Box Annotation Tool
 ![3D Bounding Box Annotation Tool](assets/img/3d_boxes.png)
 
@@ -24,41 +26,17 @@
 | Key | Description   | |
 | --- | ------------- |---|
 |  ![V](assets/textures/keyboard_small/c.png)  | Toggle view (3D view/Bird's-Eye-View)||
-|     |  ![W](assets/textures/keyboard_small/w.png)  | Move forward in 3D view (TODO)|
-|     |  ![A](assets/textures/keyboard_small/a.png)  | Move left in 3D view (TODO)|
-|     |  ![S](assets/textures/keyboard_small/s.png)  | Move backward in 3D view (TODO)|
-|     |  ![D](assets/textures/keyboard_small/d.png)  | Move right in 3D view (TODO)|
-|     |  ![Q](assets/textures/keyboard_small/q.png)  | Move down in 3D view (TODO)|
-|     |  ![E](assets/textures/keyboard_small/e.png)  | Move up in 3D view (TODO)|
-|  ![C](assets/textures/keyboard_small/c.png)  | Enlarge camera image||
 |  ![N](assets/textures/keyboard_small/n.png)  | Next frame     ||
 |  ![P](assets/textures/keyboard_small/p.png)  | Previous frame   ||
-|  ![I](assets/textures/keyboard_small/i.png)  | Interpolate    ||
-|  ![CTRL](assets/textures/keyboard_small/ctrl.png)![MOUSELEFT](assets/textures/keyboard_small/mouseleft.png) | Snap to grid in 0.5m steps (floor alignment mode)  ||
 |  ![T](assets/textures/keyboard_small/t.png)  | Enable/Disable Translation mode||
-|     |  ![W](assets/textures/keyboard_small/w.png)  | Move selected object forward (TODO)|
-|     |  ![A](assets/textures/keyboard_small/a.png)  | Move selected object to left (TODO)|
-|     |  ![S](assets/textures/keyboard_small/s.png)  | Move selected object backward (TODO)|
-|     |  ![D](assets/textures/keyboard_small/d.png)  | Move selected object to right (TODO)|
-|     |  ![Q](assets/textures/keyboard_small/q.png)  | Move selected object down (TODO)|
-|     |  ![E](assets/textures/keyboard_small/e.png)  | Move selected object up (TODO)|
 |  ![R](assets/textures/keyboard_small/r.png)  | Enable/Disable Rotation mode||
-|     |  ![LEFT](assets/textures/keyboard_small/left.png) | Rotate selected object counter-clock-wise (TODO)|
-|     |  ![RIGHT](assets/textures/keyboard_small/right.png)  | Rotate selected object clock-wise (TODO)|
 |  ![Y](assets/textures/keyboard_small/y.png)  | Enable/Disable Scaling mode ||
-|     | ![UP](assets/textures/keyboard_small/up.png) | Increase length along longitudinal axis (y-axis) (TODO)|
-|     | ![DOWN](assets/textures/keyboard_small/down.png) | Decrease length along longitudinal axis (y-axis) (TODO)|
-|     | ![LEFT](assets/textures/keyboard_small/left.png)  | Decrease width along lateral axis (x-axis) (TODO)|
-|     | ![RIGHT](assets/textures/keyboard_small/right.png)  | Increase width along lateral axis (x-axis) (TODO)|
-|     | ![SHIFT](assets/textures/keyboard_small/shift.png)![RIGHT](assets/textures/keyboard_small/right.png)  | Increase height along vertical axis (z-axis) (TODO)|
-|     | ![CTRL](assets/textures/keyboard_small/ctrl.png)![RIGHT](assets/textures/keyboard_small/right.png) | Decrease height along vertical axis (z-axis) (TODO)|
 |  ![PLUS](assets/textures/keyboard_small/plus.png)  | Increase arrow size ||
 |  ![MINUS](assets/textures/keyboard_small/minus.png)  | Decrease arrow size ||
 |  ![X](assets/textures/keyboard_small/x.png)  | Show/Hide X-axis ||
 |  ![Y](assets/textures/keyboard_small/y.png)  | Show/Hide Y-axis ||
 |  ![Z](assets/textures/keyboard_small/z.png)  | Show/Hide Z-axis (only in 3D mode)||
-|  ![SPACE](assets/textures/keyboard_small/space.png)  | Switch between different operation modes (translate, rotate, scale) (TODO) ||
-|  ![TAB](assets/textures/keyboard_small/tab.png)  | Select next object (TODO)||
+
 Hints:
 + Select `Copy label to next frame` checkbox if you want to keep the label (position, size, class) for next frame
 + Use helper views to align object along z-axis (no need to switch into 3D view)
